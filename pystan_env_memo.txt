@@ -1,5 +1,6 @@
 """
 #Pystanの環境構築でエラーでまくったので、うまくいった方法をメモ。
+https://longtweets.hatenablog.com/entry/2024/09/22/201210?_gl=1*1wf7ynp*_gcl_au*MzA4NTY4NDg4LjE3MjcwMDMyMjE.
 
 #以下は、コマンドラインでの操作
 
