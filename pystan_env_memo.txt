@@ -1,0 +1,62 @@
+"""
+#Pystanの環境構築でエラーでまくったので、うまくいった方法をメモ。
+
+#以下は、コマンドラインでの操作
+
+#まず専用の環境を作る
+python -m venv myenv
+source myenv/bin/activate
+
+#install libraries
+pip install numpy==1.21.6 pandas==1.3.5 pystan==3.3.0  
+pip install jupyter nest_asyncio httpstan 
+
+#option
+pip install scipy==1.10.1
+pip install arviz==0.13.0
+pip install pymc3==3.11.6  
+
+#ーー
+#で、
+#以下のサンプルコード（Jupyter）がうまく動いた
+#REF: 
+#https://qiita.com/msx222/items/37da015a06758a05c990
+"""
+
+
+
+import nest_asyncio
+nest_asyncio.apply()
+import stan
+
+import stan
+
+schools_code = """
+data {
+  int<lower=0> J;         // number of schools
+  real y[J];              // estimated treatment effects
+  real<lower=0> sigma[J]; // standard error of effect estimates
+}
+parameters {
+  real mu;                // population treatment effect
+  real<lower=0> tau;      // standard deviation in treatment effects
+  vector[J] eta;          // unscaled deviation from mu by school
+}
+transformed parameters {
+  vector[J] theta = mu + tau * eta;        // school treatment effects
+}
+model {
+  target += normal_lpdf(eta | 0, 1);       // prior log-density
+  target += normal_lpdf(y | theta, sigma); // log-likelihood
+}
+"""
+
+schools_data = {"J": 8,
+                "y": [28,  8, -3,  7, -1,  1, 18, 12],
+                "sigma": [15, 10, 16, 11,  9, 11, 10, 18]}
+
+posterior = stan.build(schools_code, data=schools_data)
+fit = posterior.sample(num_chains=4, num_samples=1000)
+eta = fit["eta"]  # array with shape (8, 4000)
+df = fit.to_frame()  # pandas `DataFrame, requires pandas
+df
